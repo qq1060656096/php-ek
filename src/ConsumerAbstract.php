@@ -79,7 +79,6 @@ abstract class ConsumerAbstract
         $this->eventConsumeConfigs = $eventConsumeConfigs;
         $this->logger = $logger;
         $options = $this->getConsumerConfig()->getOptions();
-        $options['group.id'] = $this->consumerConfig->getGroupId();
         isset($options['offset.store.method']) ? null : $options['offset.store.method'] = 'broker';
         $RdKafkaConfig = new RdKafkaConfig();
         $this->rdKafkaConf = $RdKafkaConfig->getNewConf($options);
@@ -164,6 +163,16 @@ abstract class ConsumerAbstract
     }
 
     /**
+     * 设置必要的kafka配置
+     */
+    protected function setRequiredRdKafkaConfig()
+    {
+        $this->rdKafkaConf->set('group.id', $this->consumerConfig->getGroupId());
+        $this->rdKafkaConf->set('metadata.broker.list', $this->cluster->getAddrsToString());
+        $this->rebalance();
+    }
+
+    /**
      * 获取消费者
      *
      * @return KafkaConsumer
@@ -173,7 +182,7 @@ abstract class ConsumerAbstract
         if ($this->rdKafkaConsumer) {
             return $this->rdKafkaConsumer;
         }
-        $this->rebalance();
+        $this->setRequiredRdKafkaConfig();
         $this->rdKafkaConsumer = $this->getNewRdKafkaConsumer($this->rdKafkaConf, $this->getConsumerConfig()->getTopicNames());
         return $this->rdKafkaConsumer;
     }
@@ -212,18 +221,19 @@ abstract class ConsumerAbstract
     {
         $consumer = $this;
         $this->rdKafkaConf->setRebalanceCb(function (\RdKafka\KafkaConsumer $kafka, $err, array $partitions = null) use ($consumer) {
+            $partitionsVar = Helper::varDump($partitions);
             switch ($err) {
                 case RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS:
-                    $consumer->logger->info("consumer.rdKafka.rebalance.assign", [$partitions]);
+                    $consumer->logger->info("consumer.rdKafka.rebalance.assign", [$partitionsVar]);
                     $kafka->assign($partitions);
                     break;
 
                 case RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS:
-                    $consumer->logger->info("consumer.rdKafka.rebalance.revoke", [$partitions]);
+                    $consumer->logger->info("consumer.rdKafka.rebalance.revoke", [$partitionsVar]);
                     $kafka->assign(NULL);
                     break;
                 default:
-                    $this->logger->error("consumer.rdKafka.rebalance.err", [$partitions]);
+                    $this->logger->error("consumer.rdKafka.rebalance.err", [$partitionsVar]);
                     throw new \Exception($err);
             }
         });
