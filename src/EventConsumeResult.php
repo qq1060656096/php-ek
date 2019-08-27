@@ -8,6 +8,8 @@
 
 namespace Zwei\ek;
 
+use Zwei\ek\Exceptions\EventConsumeResultParamException;
+
 /**
  * 事件消费结果
  *
@@ -16,16 +18,43 @@ namespace Zwei\ek;
  */
 class EventConsumeResult
 {
+    const STATUS_SUCCESS = true;
+    const STATUS_FAIL = false;
+    /**
+     * @var bool
+     */
     protected $status;
+
     protected $data;
 
+    /**
+     * EventConsumeResult constructor.
+     * @param bool $status 状态[true->成功, false->失败]
+     * @param $data
+     * @throws EventConsumeResultParamException
+     */
     public function __construct($status, $data)
     {
-        $this->status = $status;
+        $this->setStatus($status);
         $this->data = $data;
     }
+
+
     /**
-     * @return mixed
+     * @param bool $status
+     * @throws EventConsumeResultParamException
+     */
+    protected function setStatus($status)
+    {
+        if (!is_bool($status)) {
+            EventConsumeResultParamException::status();
+        }
+        $this->status = $status;
+    }
+
+
+    /**
+     * @return bool
      */
     public function getStatus()
     {

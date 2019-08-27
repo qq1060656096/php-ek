@@ -37,7 +37,7 @@ return [
         'events'    => [
             // 事件名 => callback
             // 初始化事件 CRM_ZNTK_INIT
-            'USER_REGISTER' => '\Zwei\Kafka\AppEventConsumer::testEventCallback',
+            'USER_REGISTER' => 'EventConsumeCallback',
         ],
         'log' => [
             'fileName' => \Zwei\ComposerVendorDirectory\ComposerVendor::getParentDir().'/logs/normal_payment_call_2.log',// 日志文件名

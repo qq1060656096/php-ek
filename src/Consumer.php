@@ -53,21 +53,27 @@ class Consumer extends ConsumerAbstract
                 $event = Event::parseArray($eventArr);
                 try {
                     $callback = $this->getEventConsumeConfigs()->get($event->getName())->getCallback();
-                    $evenConsumeResult = call_user_func($callback, [$event]);
-                    if ($evenConsumeResult instanceof EventConsumeResult && !$evenConsumeResult->getStatus()) {
-                        $this->getLogger()->log("consumer.event.consumeFail", get_object_vars($evenConsumeResult));
+                    $evenConsumeResult = call_user_func_array($callback, [$message, $event]);
+                    if ($evenConsumeResult instanceof EventConsumeResult && $evenConsumeResult->getStatus() !== true) {
+                        $this->getLogger()->info("consumer.event.consume.fail",
+                            [
+                                'event' => (string)$event,
+                                get_object_vars($evenConsumeResult)
+                            ]
+                        );
                         return;
                     }
                     // 广播事件
                     $this->broadcast($message->topic_name, $event);
                     return;
                 } catch (ConsumerEventConfigNotFoundException $e) {
-                    $this->getLogger()->info("consumer.event.config.notFund", [
-                        'eventName' => $event->getName(),
+                    $this->getLogger()->info("consumer.event.consume.config.notFund", [
+                        'event' => (string)$event,
                         'exceptionMsg' => $e->getMessage(),
                     ]);
                 } catch (\Exception $e) {// 异常处理
-                    $this->getLogger()->info("consumer.event.exception", [
+                    $this->getLogger()->info("consumer.event.consume.exception", [
+                        'event' => (string)$event,
                         'consumerConfig' => $this->getConsumerConfig()->getAll(),
                         'exception' => EkBaseException::convertArray($e),
                     ]);
@@ -112,7 +118,6 @@ class Consumer extends ConsumerAbstract
         }
         $successEventName = $event->getName().$broadcastEventSuffix;
         $event->setName($event->getName(), $successEventName);
-        $event['time'] = time();
         // 不是广播事件, 才广播
         $this->producer->sendTopicMessage($topicName, (string)$event, $event->getKey());
         return true;
