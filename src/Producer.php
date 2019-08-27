@@ -7,6 +7,7 @@ namespace Zwei\ek;
  * Time: 11:06
  */
 
+use Monolog\Logger;
 use RdKafka\Producer as RdKafkaProducer;
 use RdKafka\ProducerTopic as RdKafkaProducerTopic;
 use RdKafka\Conf as RdKafkaConf;
@@ -33,6 +34,15 @@ class Producer
      */
     protected $cacheRdKafkaProducerTopic = null;
 
+    /**
+     * @var Conf RdKafka配置
+     */
+    protected $rdKafkaConf;
+
+    /**
+     * @var Logger 日志
+     */
+    protected $logger;
 
     /**
      * 构造方法初始化
@@ -41,12 +51,15 @@ class Producer
      * @param string $topicName
      * @param array $options
      */
-    public function __construct($name, $clusterName, $topicName, array $options)
+    public function __construct($name, $clusterName, $topicName, array $options, Logger $logger)
     {
         $this->name = $name;
         $this->clusterName = $clusterName;
         $this->topicName = $topicName;
         $this->options = $options;
+        $this->logger = $logger;
+        $rdKafkaConfig = new RdKafkaConfig();
+        $this->rdKafkaConf = $rdKafkaConfig->getNewConf($options);
     }
 
     /**
@@ -172,4 +185,43 @@ class Producer
         // 堵塞
         $this->getRdKafkaProducer()->poll($milliseconds);
     }
+
+    /**
+     * @return Logger
+     */
+    public function getLogger()
+    {
+        return $this->logger;
+    }
+
+    /**
+     * 设置必要的kafka配置
+     */
+    protected function setRequiredRdKafkaConfig()
+    {
+        $producer = $this;
+        // 发送回调
+        $this->rdKafkaConf->setDrMsgCb(function ($kafka, $message) use ($producer) {
+            if ($message->err) {
+                // 消息发送失败
+                // message permanently failed to be delivered
+                $producer->getLogger()->error("producer.setDrMsgCb.report", [
+                    '$kafka' => Helper::varDump($kafka),
+                    '$message' => Helper::varDump($message),
+                ]);
+            } else {
+                // message successfully delivered
+            }
+        });
+        // 错误回调
+        $this->rdKafkaConf->setErrorCb(function ($kafka, $err, $reason) use ($producer) {
+            $producer->getLogger()->error("producer.setErrorCb.callback", [
+                '$kafka' => Helper::varDump($kafka),
+                '$err' => Helper::varDump($err),
+                '$errStr' => rd_kafka_err2str($err),
+                '$reason' => Helper::varDump($reason),
+            ]);
+        });
+    }
+
 }
