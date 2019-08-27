@@ -34,9 +34,9 @@ class Consumer extends ConsumerAbstract
      */
     public function consume(Message $message)
     {
-        $this->getLogger()->info("consumer.message", [$message]);
         switch ($message->err) {
             case RD_KAFKA_RESP_ERR_NO_ERROR:
+                $this->getLogger()->info("consumer.message.normal", [$message]);
                 $payload = $message->payload;
                 if ($payload === 'custom.message.heart') {
                     $this->getLogger()->info("consumer.message.heart", [$payload]);

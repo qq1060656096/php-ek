@@ -8,6 +8,9 @@
 
 namespace Zwei\ek;
 
+use Monolog\Handler\RotatingFileHandler;
+use Monolog\Logger;
+
 /**
  * Trait EventProducersTrait
  * @package Zwei\ek
@@ -28,7 +31,13 @@ trait EventProducersTrait
             $clusterName    = $row['clusterName'];
             $topicName      = $row['topicName'];
             $options        = $row['options'];
-            $rowProducer    = new Producer($name, $clusterName, $topicName, $options);
+
+            $rowLog         = $row['log'];
+            $log            = new Logger($name);
+            $log->pushHandler(new RotatingFileHandler($rowLog['fileName'], $rowLog['maxFiles']));
+            $logger         = $log;
+
+            $rowProducer    = new Producer($name, $clusterName, $topicName, $options, $logger);
             $rowProducer->setCluster($clusters->get($clusterName));
             $producers->set($rowProducer);
         }

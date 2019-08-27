@@ -167,8 +167,18 @@ abstract class ConsumerAbstract
      */
     protected function setRequiredRdKafkaConfig()
     {
+        $consumer = $this;
         $this->rdKafkaConf->set('group.id', $this->consumerConfig->getGroupId());
         $this->rdKafkaConf->set('metadata.broker.list', $this->cluster->getAddrsToString());
+        // 错误回调
+        $this->rdKafkaConf->setErrorCb(function ($kafka, $err, $reason) use ($consumer) {
+            $consumer->getLogger()->error("consumer.setErrorCb.callback", [
+                '$kafka' => Helper::varDump($kafka),
+                '$err' => Helper::varDump($err),
+                '$errStr' => rd_kafka_err2str($err),
+                '$reason' => Helper::varDump($reason),
+            ]);
+        });
         $this->rebalance();
     }
 

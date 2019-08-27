@@ -120,9 +120,10 @@ class Producer
      */
     public function getNewRdKafkaProducer()
     {
+        $this->setRequiredRdKafkaConfig();
         $cluster = $this->getCluster();
         $brokerListStr = $cluster->getAddrsToString();
-        $rdKafkaProducer = new RdKafkaProducer();
+        $rdKafkaProducer = new RdKafkaProducer($this->rdKafkaConf);
         $rdKafkaProducer->setLogLevel(LOG_DEBUG);
         $rdKafkaProducer->addBrokers($brokerListStr);
         return $rdKafkaProducer;
@@ -144,7 +145,6 @@ class Producer
     protected function getCacheRdKafkaProducerTopic($topicName)
     {
         if (!isset($this->cacheRdKafkaProducerTopic[$topicName])) {
-            $this->getRdKafkaProducer();
             $this->cacheRdKafkaProducerTopic[$topicName] = $this->getNewRdKafkaProducerTopic($topicName);
         }
         return $this->cacheRdKafkaProducerTopic[$topicName];
@@ -157,7 +157,7 @@ class Producer
      */
     public function getNewRdKafkaProducerTopic($topicName)
     {
-        return $this->rdKafkaProducerTopic->newTopic($topicName);
+        return $this->getRdKafkaProducer()->newTopic($topicName);
     }
 
     /**

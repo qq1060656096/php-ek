@@ -4,7 +4,7 @@ return [
         'class' => \Zwei\ek\Consumer::class,// 消费者class
         'groupId'       => 'test',// kafka group_id
         'clusterName'   => 'default',// 集群名: zwei-kafka-cluster.php中配置
-        'producerName'  => 'v0pBbs',// 生产者名
+        'producerName'  => 'pDefault',// 生产者名
         'topicNames'    => [// 主题列表
             "test6",
         ],
@@ -26,7 +26,7 @@ return [
         'class' => \Zwei\ek\Consumer::class,// 消费者class
         'groupId'       => 'test',// kafka group_id
         'clusterName'   => 'default',// 集群名: zwei-kafka-cluster.php中配置
-        'producerName'  => 'v0pBbs',// 生产者名
+        'producerName'  => 'pDefault',// 生产者名
         'topicNames'    => [// 主题列表
             "test6",
         ],

@@ -42,7 +42,7 @@ class EventProducers
         $this->clustersConfig = $clustersConfig;
         $this->producersConfig = $producersConfig;
         $this->clusters = $this->getClustersFromConfig($clustersConfig);
-        $this->producers = $this->getProducersFromConfig($producersConfig);
+        $this->producers = $this->getProducersFromConfig($this->clusters, $producersConfig);
     }
 
     /**
