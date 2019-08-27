@@ -21,3 +21,28 @@ ek(Event Kafka)是一个基于事件消费的kafka消费者和生产者, 你可�
 * **未撰写** [如何使用消费者](docs/consumers_config.md)
 * **未撰写** [消费者如何手动提交](docs/consumers_config.md)
 
+
+### 生产者
+```php
+$eventProducers = new \Zwei\ek\EventProducers($clustersConfig, $producersConfig);
+// 原生消息发送
+$eventProducers->sendMessage($producerName, $message, $key, $milliseconds);
+
+$data = [
+    'uid' => 1,
+    'accountName' => 'test',
+];
+$event = \Zwei\ek\Event::getNewInstance()->NewEvent('USER_REGISTER', $data);
+// 同步发送
+$eventProducers->sendSyncEvent($producerName, $event);
+// 异步发送
+$eventProducers->sendAsyncEvent($producerName, $event);
+```
+
+### 消费者
+
+```php
+$consumerName = "normal_user_register";
+$eventConsumers = new \Zwei\ek\EventConsumers($clustersConfig, $consumersConfig, $producersConfig);
+$eventConsumers->runConsume($consumerName);
+```

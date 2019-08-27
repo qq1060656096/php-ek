@@ -12,6 +12,7 @@ namespace Zwei\ek;
 use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
 use RdKafka\Message;
+use Zwei\ek\Exceptions\ConsumerEventConfigNotFoundException;
 use Zwei\ek\Exceptions\ConsumerParamException;
 
 /**
@@ -58,11 +59,12 @@ class EventConsumeConfigs
      * 获取单个消费事件配置
      * @param string $eventName
      * @return EventConsumeConfig
+     * @throws ConsumerEventConfigNotFoundException
      */
     public function get($eventName)
     {
         if (!isset($this->eventConsumeConfigs[$eventName])) {
-
+            throw new ConsumerEventConfigNotFoundException('consumer.event.config.notFound');
         }
         return $this->eventConsumeConfigs[$eventName];
     }

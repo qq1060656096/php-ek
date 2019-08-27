@@ -51,6 +51,15 @@ class Event
     protected $additional;
 
     /**
+     * 获取新的事件对象
+     * @return Event
+     */
+    public static function getNewInstance()
+    {
+        return new Event();
+    }
+
+    /**
      * 创建事件
      *
      * @param string $name 事件名
@@ -64,7 +73,11 @@ class Event
     {
         $id = $this->generateEventId($ip);
         $additional = null;
-        return $this->NewEventRaw($id, $name, $key, $version, $ip, $data, $additional);
+        if ($ip) {
+            $ip = '127.0.0.1';
+        }
+        $time = time();
+        return $this->NewEventRaw($id, $name, $key, $version, $ip, $time, $data, $additional);
     }
 
     /**
@@ -113,7 +126,7 @@ class Event
     {
         $arr = [
             'id'    => $this->id,
-            'name'  => $this->time,
+            'name'  => $this->name,
             'key'   => $this->key,
             'v'     => $this->version,
             'ip'    => $this->ip,
@@ -146,13 +159,13 @@ class Event
     {
         $event          = new Event();
         $event->id      = $array['id'];
-        $event->time    = $array['time'];
+        $event->name    = $array['name'];
         $event->key     = $array['key'];
-        $event->version = $array['version'];
+        $event->version = isset($array['version']) ? $array['version'] : null;
         $event->ip      = $array['ip'];
         $event->time    = $array['time'];
         $event->data    = $array['data'];
-        $event->additional = $array['additional'];
+        $event->additional = isset($array['additional']) ? $array['additional'] : null;
         return $event;
     }
 

@@ -10,6 +10,7 @@ namespace Zwei\ek;
 
 
 use RdKafka\Message;
+use Zwei\ek\Exceptions\ConsumerEventConfigNotFoundException;
 use Zwei\ek\Exceptions\EkBaseException;
 
 class Consumer extends ConsumerAbstract
@@ -36,8 +37,8 @@ class Consumer extends ConsumerAbstract
     {
         switch ($message->err) {
             case RD_KAFKA_RESP_ERR_NO_ERROR:
-                $this->getLogger()->info("consumer.message.normal", [$message]);
                 $payload = $message->payload;
+                $this->getLogger()->info("consumer.message.payload", [$payload]);
                 if ($payload === 'custom.message.heart') {
                     $this->getLogger()->info("consumer.message.heart", [$payload]);
                     return;
@@ -60,6 +61,11 @@ class Consumer extends ConsumerAbstract
                     // 广播事件
                     $this->broadcast($message->topic_name, $event);
                     return;
+                } catch (ConsumerEventConfigNotFoundException $e) {
+                    $this->getLogger()->info("consumer.event.config.notFund", [
+                        'eventName' => $event->getName(),
+                        'exceptionMsg' => $e->getMessage(),
+                    ]);
                 } catch (\Exception $e) {// 异常处理
                     $this->getLogger()->info("consumer.event.exception", [
                         'consumerConfig' => $this->getConsumerConfig()->getAll(),
