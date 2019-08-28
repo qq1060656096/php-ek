@@ -24,8 +24,12 @@
   "autoload": {
     "psr-4": {
       "Zwei\\ek\\": "src/",
-      "Zwei\\ek\\Tests\\": "tests/"
-    }
+      "Zwei\\ek\\Tests\\": "tests/",
+      "Zwei\\ek\\Examples\\": "examples/"
+    },
+    "files": [
+      "examples/functionConsumeEvent.php"
+    ]
   },
   "suggest": {
     "php": "Required to php >=(5.4)."

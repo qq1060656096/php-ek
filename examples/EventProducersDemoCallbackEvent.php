@@ -16,13 +16,14 @@ $clustersConfig = include $clustersConfigFile;
 $producersConfigFile  = $vendorDir.'/config/zwei.ek.kafka.producers.php';
 $producersConfig = include $producersConfigFile;
 
-if (!isset($argv[3])) {
-    die("producer.params.error");
-}
-$producerName   = $argv[1];
-$isSync         = $argv[2] ? true : false;
-$milliseconds   = $isSync ? -1 : 0;
-$message        = $argv[3];
-$key            = isset($argv[4]) ? $argv[4] : null;
+
+$producerName   = 'pDefault';
 $eventProducers = new \Zwei\ek\EventProducers($clustersConfig, $producersConfig);
-$eventProducers->sendMessage($producerName, $message, $key, $milliseconds);
+$eventList = [
+    'DemoCallback.Function',
+    'DemoCallback.StaticMethodConsumeEvent',
+    'DemoCallback.MethodConsumeEvent',
+];
+foreach ($eventList as $eventName) {
+    $eventProducers->sendSyncEvent($producerName, \Zwei\ek\Event::getNewInstance()->NewEvent($eventName, [$eventName]));
+}
